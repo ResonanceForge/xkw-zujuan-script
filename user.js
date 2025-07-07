@@ -10,7 +10,7 @@
 // @match        https://zujuan.xkw.com/share-paper/*
 // @icon         https://zujuan.xkw.com/favicon.ico
 // @grant        GM_notification
-// @require      https://cdn.jsdelivr.net/npm/sweetalert2@11
+// @require      https://fastly.jsdelivr.net/npm/sweetalert2@11
 // @homepage     https://github.com/bzyzh/xkw-zujuan-script
 // @license      GNU Affero General Public License v3.0
 // ==/UserScript==
