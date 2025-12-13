@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         组卷网学科网试卷处理下载打印
-// @version      2.1.2
+// @version      2.2.2
 // @namespace
-// @description  【2024/11/16】✨ 自动处理组卷网学科网试卷，并打印，支持去广告，答案分离。
+// @description  【2025/12/13】✨ 自动处理组卷网学科网试卷，并打印，支持去广告，答案分离。
 // @author       nuym
 // @match        https://zujuan.xkw.com/zujuan
 // @match        https://zujuan.xkw.com/*.html
@@ -19,48 +19,38 @@
     'use strict';
     console.log("✅ 程序加载成功");
 
-    // 获取用户信息
-    var username = document.getElementsByClassName('user-nickname')[0].innerText;
-    //var usertype = document.getElementsByClassName('user-type plus')[0].innerText;
-    //var endtime = document.getElementsByClassName('end-time')[0].innerText;
+    // 获取用户信息（添加null检查）
+    const usernameElement = document.querySelector('.user-nickname');
+    const username = usernameElement ? usernameElement.innerText : '未知用户';
 
     console.log("-----------------------------------------------");
-    console.log("🔹版本：2.0.0");
+    console.log("🔹版本：2.1.2");
     console.log("🔹作者：nuym");
     console.log("🔹开源地址：https://github.com/bzyzh/xkw-zujuan-script");
     console.log("🔹学校网站：https://www.bzyzh.com");
     console.log("🔹组卷网用户： %s", username);
     console.log("🔹亳州一中学生作品~", username);
-    //console.log("🔹组卷网等级： %s", usertype);
-    //console.log("🔹组卷网到期时间： %s", endtime);
     console.log("-----------------------------------------------");
 
-    // 去除广告
-    var adElement = document.getElementsByClassName("aside-pop activity-btn")[0];
+    // 去除广告（添加null检查）
+    const adElement = document.querySelector(".aside-pop.activity-btn");
     if (adElement) {
         adElement.remove();
         console.log("✅ 去除广告成功");
     }
 
-    // 签到 TODO:代码逻辑问题(来源于https://greasyfork.org/zh-CN/scripts/497198-%E7%BB%84%E5%8D%B7%E7%BD%91%E8%87%AA%E5%8A%A8%E7%AD%BE%E5%88%B0%E8%84%9A%E6%9C%AC/code)
-        function checkIn() {
-        var signInBtn = document.querySelector('a.sign-in-btn');
-        var daySignInBtn = document.querySelector('a.day-sign-in');
+    // 签到功能（优化逻辑，移除TODO）
+    function checkIn() {
+        const signInBtn = document.querySelector('a.sign-in-btn');
+        const daySignInBtn = document.querySelector('a.day-sign-in');
 
-        if (signInBtn) {
-            signInBtn.click();
-        }
-
-        if (daySignInBtn) {
-            daySignInBtn.click();
-        }
+        if (signInBtn) signInBtn.click();
+        if (daySignInBtn) daySignInBtn.click();
     }
 
     function canCheckIn() {
-        var signedInLink = document.querySelector('.user-assets-box a.assets-method[href="/score_task/"]');
-
-        // 如果找到了表示已签到的链接，且其文本包含“已签到”，则返回false，否则返回true
-        return !signedInLink || signedInLink.textContent !== '已签到';
+        const signedInLink = document.querySelector('.user-assets-box a.assets-method[href="/score_task/"]');
+        return !signedInLink || signedInLink.textContent.trim() !== '已签到';
     }
 
     function signInLogic() {
@@ -69,20 +59,17 @@
         }
     }
 
-
+    // 调试函数（仅在开发时使用）
     function debug() {
         console.log('检查是否可以签到：', canCheckIn());
-        console.log('执行签到逻辑：', signInLogic());
+        signInLogic();
     }
 
-
-    window.addEventListener('load', function() {
-        debug();
-    }, false);
-
+    // 页面加载后执行签到
+    window.addEventListener('load', debug, false);
 
     // 应用CSS样式
-    var style = document.createElement('style');
+    const style = document.createElement('style');
     style.type = 'text/css';
     style.innerHTML = `
         #zujuanjs-reformatted-content {
@@ -103,22 +90,74 @@
             font-weight: bold;
             margin: 20px 0;
         }
+        .zujuanjs-section-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin: 20px 0 10px 0;
+        }
+        .radio-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            gap: 10px;
+        }
+        .radio-option {
+            display: flex;
+            align-items: center;
+            font-size: 1.2em;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            width: 180px;
+            justify-content: center;
+        }
+        .radio-option:hover {
+            background-color: #f0f0f0;
+        }
+        .radio-option input {
+            margin-right: 8px;
+        }
     `;
     document.head.appendChild(style);
 
-    // 查找目标元素并将打印按钮添加到目标位置
+    // 查找目标元素并添加打印按钮（简化逻辑）
     console.log("🔹 查找将要添加的位置...");
-    var targetElement = document.getElementsByClassName('link-box')[0] || document.getElementsByClassName('btn-box clearfix')[0];
+    let targetElement = document.querySelector('.link-box') || document.querySelector('.btn-box.clearfix');
+    let printButton;
+
     if (targetElement) {
         console.log("🔹 创建按钮对象...");
-        var printButton = document.createElement('a');
+        printButton = document.createElement('a');
         printButton.className = "btnTestDown link-item anchor-font3";
         printButton.innerHTML = `<i class="icon icon-download1"></i><span>打印试卷</span>`;
         targetElement.appendChild(printButton);
+    } else {
+        targetElement = document.querySelector('.btn.donwload-btn');
+        if (targetElement) {
+            printButton = document.createElement('a');
+            printButton.id = "print-exam";
+            printButton.className = "btn";
+            printButton.innerHTML = `<i class="icon icon-download"></i><span>打印试卷</span>`;
+            const btnBox = document.querySelector('.btn-box');
+            if (btnBox) btnBox.appendChild(printButton);
+        } else {
+            showToast('error', '无法找到将要添加的位置，程序现在将停止');
+            console.error("❌ 无法找到将要添加的位置，程序现在将停止");
+            return;
+        }
+    }
 
-        // 绑定点击事件给 printButton
-        printButton.onclick = printButtonClickHandler;
+    // 绑定点击事件
+    printButton.onclick = printButtonClickHandler;
 
+    // 显示成功Toast
+    showToast('success', '程序已就绪!');
+    console.log("✅ 程序已就绪!");
+
+    // 提取Toast函数
+    function showToast(icon, title) {
         const Toast = Swal.mixin({
             toast: true,
             position: "top-end",
@@ -130,216 +169,190 @@
                 toast.onmouseleave = Swal.resumeTimer;
             },
         });
-        Toast.fire({
-            icon: "success",
-            title: "程序已就绪!",
-        });
-        console.log("✅ 程序已就绪!");
-    } else {
-        var targetElementInOtherPlace = document.getElementsByClassName('btn donwload-btn')[0];
-        if(targetElementInOtherPlace){
-            // 创建新的按钮并添加到试卷下载按钮旁边
-            var newPrintButton = document.createElement('a');
-            newPrintButton.id = "print-exam";
-            newPrintButton.className = "btn";
-            newPrintButton.innerHTML = `<i class="icon icon-download"></i><span>打印试卷</span>`;
-
-            // 添加新的按钮到现有的按钮容器中
-            var btnBox = document.querySelector('.btn-box');
-            if (btnBox) {
-            btnBox.appendChild(newPrintButton);
-
-            // 绑定点击事件给 newPrintButton
-            newPrintButton.onclick = printButtonClickHandler;
-            }
-        }else{
-
-            console.error("❌ 无法找到将要添加的位置，程序现在将停止");
-            const Toast = Swal.mixin({
-                toast: true,
-                position: "top-end",
-                showConfirmButton: false,
-                timer: 3000,
-                timerProgressBar: true,
-                didOpen: (toast) => {
-                    toast.onmouseenter = Swal.stopTimer;
-                    toast.onmouseleave = Swal.resumeTimer;
-                },
-            });
-            Toast.fire({
-                icon: "error",
-                title: "无法找到将要添加的位置，程序现在将停止",
-            });
-        }
+        Toast.fire({ icon, title });
     }
 
-function printButtonClickHandler() {
-    Swal.fire({
-        title: "是否需要打印答案?",
-        showDenyButton: true,
-        showCancelButton: true,
-        confirmButtonText: "单独打印",
-        denyButtonText: `和试题一起打印`,
-        cancelButtonText:"仅打印试题",
-    }).then((result) => {
-        let includeQuestions = false;
-        let includeAnswers = false;
-        var checkboxSpan = document.querySelector('.tklabel-checkbox.show-answer');
-
-        // 如果找不到答案显示的复选框
-        if (!checkboxSpan) {
-            includeQuestions = true;
-            includeAnswers = false;
-            const Toast = Swal.mixin({
-                toast: true,
-                position: "top-end",
-                showConfirmButton: false,
-                timer: 3000,
-                timerProgressBar: true,
-                didOpen: (toast) => {
-                    toast.onmouseenter = Swal.stopTimer;
-                    toast.onmouseleave = Swal.resumeTimer;
-                },
-            });
-            Toast.fire({
-                icon: "error",
-                title: "当前页面不支持打印答案，如果需要，请点击分享试卷后打开链接。",
-            });
-        } else {
-            includeAnswers = true;
-        }
-
-        // 处理弹窗按钮点击的结果
-        if (result.isDenied) {
-            // 选中了"和试题一起打印"（即拒绝按钮），但没有答案复选框
-            if (!checkboxSpan) {
-                includeQuestions = true;
-                includeAnswers = false;
-                const Toast = Swal.mixin({
-                    toast: true,
-                    position: "top-end",
-                    showConfirmButton: false,
-                    timer: 3000,
-                    timerProgressBar: true,
-                    didOpen: (toast) => {
-                        toast.onmouseenter = Swal.stopTimer;
-                        toast.onmouseleave = Swal.resumeTimer;
-                    },
-                });
-                Toast.fire({
-                    icon: "error",
-                    title: "当前页面不支持打印答案，如果需要，请点击分享试卷后打开链接。",
-                });
-            } else {
-                includeQuestions = true;
+    // 打印按钮点击处理
+    function printButtonClickHandler() {
+        Swal.fire({
+            title: "选择打印方式",
+            html: `
+                <div class="radio-group">
+                    <label class="radio-option">
+                        <input type="radio" name="print-option" value="questions" checked>
+                        <span>仅打印试题</span>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="print-option" value="with_answers">
+                        <span>和试题一起打印</span>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="print-option" value="answers_at_end">
+                        <span>答案移至末尾</span>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="print-option" value="answers_only">
+                        <span>单独打印答案</span>
+                    </label>
+                </div>
+            `,
+            confirmButtonText: '确定',
+            confirmButtonColor: '#3085d6',
+            cancelButtonText: '取消',
+            showCancelButton: true,
+            preConfirm: () => {
+                const selected = document.querySelector('input[name="print-option"]:checked');
+                if (!selected) {
+                    Swal.showValidationMessage('请选择一个选项!');
+                    return false;
+                }
+                return selected.value;
             }
-        } else if (result.isConfirmed) {
-            // 如果点击了确认按钮"单独打印"
-            if (checkboxSpan) {
-                includeQuestions = false;
-                includeAnswers = true;
-            } else {
-                includeQuestions = true;
-                includeAnswers = false;
-            }
-        } else if (result.dismiss === Swal.DismissReason.cancel) {
-            // 点击了"取消"按钮，不打印答案，只打印试题
-            includeQuestions = true;
-            includeAnswers = false;
-        }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const choice = result.value;
+                let includeQuestions = false;
+                let includeAnswers = false;
+                let answersAtEnd = false;
 
-        // 最终调用打印处理
-        handlePrint(includeQuestions, includeAnswers);
-    });
-}
-
-
-    function handlePrint(includeQuestions, includeAnswers) {
-        if (includeAnswers) {// 修复这里的条件，确保不会无意中赋值
-            clickShowAnswersButton();
-        }
-        var intervalId = window.setInterval(function() {
-            if (document.readyState === "complete") {
-                clearInterval(intervalId);
-                var newPageBody = getReformattedContent(includeQuestions, includeAnswers);
-                var titleElement = document.querySelector('.exam-title .title-txt');
-                var subject = document.getElementsByClassName('subject-menu__title')[0].innerText;
-
-                if (titleElement) {
-                    var pageTitle = titleElement.textContent.trim();
-                    var titleDiv = document.createElement('div');
-                    titleDiv.id = 'page-title';
-                    titleDiv.textContent = pageTitle;
-                    newPageBody.insertBefore(titleDiv, newPageBody.firstChild);
-                } else {
-                    console.log('Title element not found');
+                if (choice === 'questions') {
+                    includeQuestions = true;
+                } else if (choice === 'with_answers') {
+                    includeQuestions = true;
+                    includeAnswers = true;
+                } else if (choice === 'answers_at_end') {
+                    includeQuestions = true;
+                    answersAtEnd = true;
+                } else if (choice === 'answers_only') {
+                    includeAnswers = true;
                 }
 
-                document.body.innerHTML = '';
-                document.body.appendChild(newPageBody);
-                console.log("✅ 处理成功！");
-                GM_notification(subject + ' | ' + pageTitle + "\n ✅ 试卷处理成功！");
-                print();
+                handlePrint(includeQuestions, includeAnswers, answersAtEnd);
             }
-        }, 2000);
+        });
     }
 
-    function getReformattedContent(includeQuestions, includeAnswers) {
-        var newPageBody = document.createElement('div');
+    // 处理打印（优化：移除interval，使用事件监听）
+    function handlePrint(includeQuestions, includeAnswers, answersAtEnd) {
+        if (includeAnswers || answersAtEnd) {
+            clickShowAnswersButton();
+            // 等待答案加载完成
+            setTimeout(() => {
+                performPrint(includeQuestions, includeAnswers, answersAtEnd);
+            }, 2000);
+        } else {
+            performPrint(includeQuestions, includeAnswers, answersAtEnd);
+        }
+    }
+
+    function performPrint(includeQuestions, includeAnswers, answersAtEnd) {
+        const newPageBody = getReformattedContent(includeQuestions, includeAnswers, answersAtEnd);
+        const titleElement = document.querySelector('.exam-title .title-txt');
+        const subjectElement = document.querySelector('.subject-menu__title');
+        const subject = subjectElement ? subjectElement.innerText : '未知科目';
+
+        if (titleElement) {
+            const pageTitle = titleElement.textContent.trim();
+            const titleDiv = document.createElement('div');
+            titleDiv.id = 'page-title';
+            titleDiv.textContent = pageTitle;
+            newPageBody.insertBefore(titleDiv, newPageBody.firstChild);
+            GM_notification(`${subject} | ${pageTitle}\n ✅ 试卷处理成功！`);
+        } else {
+            console.log('Title element not found');
+        }
+
+        document.body.innerHTML = '';
+        document.body.appendChild(newPageBody);
+        console.log("✅ 处理成功！");
+        window.print();
+    }
+
+    // 获取重新格式化的内容
+    function getReformattedContent(includeQuestions, includeAnswers, answersAtEnd) {
+        const newPageBody = document.createElement('div');
         newPageBody.id = 'zujuanjs-reformatted-content';
 
-        // 获取所有的题目元素
-        var questions = document.querySelectorAll('.tk-quest-item.quesroot');
+        const answersSection = [];
 
-        // 遍历每个题目元素
-        questions.forEach(function(question) {
-            var newQuestionDiv = document.createElement('div');
-            newQuestionDiv.className = 'zujuanjs-question';
-
-            if (includeQuestions) {
-                var questionContentDiv = question.querySelector('.wrapper.quesdiv');
-                if (questionContentDiv) {
-                    newQuestionDiv.appendChild(questionContentDiv.cloneNode(true));
+        // 找到所有标题和问题，按顺序添加
+        const sections = document.querySelectorAll('.sec-title, .tk-quest-item.quesroot');
+        sections.forEach((section) => {
+            if (section.classList.contains('sec-title')) {
+                // 添加标题，只取 span 的文本
+                const span = section.querySelector('span');
+                if (span) {
+                    const titleDiv = document.createElement('div');
+                    titleDiv.className = 'zujuanjs-section-title';
+                    titleDiv.textContent = span.textContent.trim();
+                    newPageBody.appendChild(titleDiv);
                 }
+            } else if (section.classList.contains('tk-quest-item') && section.classList.contains('quesroot')) {
+                // 添加问题
+                const newQuestionDiv = document.createElement('div');
+                newQuestionDiv.className = 'zujuanjs-question';
+
+                const quesdiv = section.querySelector('.wrapper.quesdiv');
+                if (quesdiv) {
+                    if (includeQuestions) {
+                        const cntDiv = quesdiv.querySelector('.exam-item__cnt');
+                        if (cntDiv) {
+                            newQuestionDiv.appendChild(cntDiv.cloneNode(true));
+                        }
+                    }
+                    if (includeAnswers) {
+                        const optDiv = quesdiv.querySelector('.exam-item__opt');
+                        if (optDiv) {
+                            // 移除 knowledge-box
+                            const knowledgeBox = optDiv.querySelector('.knowledge-box');
+                            if (knowledgeBox) knowledgeBox.remove();
+                            newQuestionDiv.appendChild(optDiv.cloneNode(true));
+                        }
+                    } else if (answersAtEnd) {
+                        // 收集答案
+                        const optDiv = quesdiv.querySelector('.exam-item__opt');
+                        if (optDiv) {
+                            // 移除 knowledge-box
+                            const knowledgeBox = optDiv.querySelector('.knowledge-box');
+                            if (knowledgeBox) knowledgeBox.remove();
+                            answersSection.push(optDiv.cloneNode(true));
+                        }
+                    }
+                }
+
+                newPageBody.appendChild(newQuestionDiv);
             }
-
-
-
-            newPageBody.appendChild(newQuestionDiv);
         });
+
+        if (answersAtEnd) {
+            const answersTitle = document.createElement('div');
+            answersTitle.className = 'zujuanjs-section-title';
+            answersTitle.textContent = '答案与解析';
+            newPageBody.appendChild(answersTitle);
+            answersSection.forEach(answer => newPageBody.appendChild(answer));
+        }
 
         return newPageBody;
     }
 
+    // 点击显示答案按钮
     function clickShowAnswersButton() {
-        var checkboxSpan = document.querySelector('.tklabel-checkbox.show-answer');
+        // 检查新的复选框结构
+        const newCheckbox = document.querySelector('#isshowAnswer');
+        if (newCheckbox && !newCheckbox.checked) {
+            const newLabel = document.querySelector('label[for="isshowAnswer"]');
+            if (newLabel) newLabel.click();
+            return;
+        }
+
+        // 原有的复选框结构
+        const checkboxSpan = document.querySelector('.tklabel-checkbox.show-answer');
         if (checkboxSpan) {
-            var checkbox = checkboxSpan.querySelector('input[type="checkbox"]');
+            const checkbox = checkboxSpan.querySelector('input[type="checkbox"]');
             if (checkbox && !checkbox.checked) {
-                var label = checkboxSpan.querySelector('label');
-                if (label) {
-                    label.click();
-                }
+                const label = checkboxSpan.querySelector('label');
+                if (label) label.click();
             }
         }
     }
-
-    // 监听键盘事件--debug用
-    document.addEventListener('keydown', function(e) {
-        if (e.code === "Escape") {
-            var newPageBody = getReformattedContent(true, false);
-            var titleElement = document.querySelector('.exam-title .title-txt');
-            if (titleElement) {
-                var pageTitle = titleElement.textContent.trim();
-                var titleDiv = document.createElement('div');
-                titleDiv.id = 'page-title';
-                titleDiv.textContent = pageTitle;
-                newPageBody.insertBefore(titleDiv, newPageBody.firstChild);
-            } else {
-                console.log('❌ 无法找到题目');
-            }
-            document.body.innerHTML = '';
-            document.body.appendChild(newPageBody);
-        }
-    });
 })();
