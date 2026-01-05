@@ -245,8 +245,11 @@
                     includeAnswers = true;
                 }
 
-        // 最终调用打印处理
-        handlePrint(includeQuestions, includeAnswers);
+                // 最终调用打印处理
+                handlePrint(includeQuestions, includeAnswers, answersAtEnd);
+            }
+        });
+    }
 
     // 在创建打印按钮后添加字体选择器
     function fontSelectButtonClickHandler() {
@@ -261,7 +264,7 @@
                 return {
                     font: document.getElementById('swal-font').value,
                     size: document.getElementById('swal-size').value
-                }
+                };
             }
         }).then((result) => {
             if (result.isConfirmed) {
@@ -314,6 +317,10 @@
         const newPageBody = document.createElement('div');
         newPageBody.id = 'zujuanjs-reformatted-content';
 
+        // 获取存储的字体设置
+        var customFont = GM_getValue('questionFont', '');
+        var customSize = GM_getValue('questionSize', '');
+
         const answersSection = [];
 
         // 找到所有标题和问题，按顺序添加
@@ -327,48 +334,26 @@
                     titleDiv.className = 'zujuanjs-section-title';
                     titleDiv.textContent = span.textContent.trim();
                     newPageBody.appendChild(titleDiv);
-        // 获取存储的字体设置
-        var customFont = GM_getValue('questionFont', '');
-        var customSize = GM_getValue('questionSize', '');
-
-        // 获取所有的题目元素
-        var questions = document.querySelectorAll('.tk-quest-item.quesroot');
-
-        // 遍历每个题目元素
-        questions.forEach(function(question) {
-            var newQuestionDiv = document.createElement('div');
-            newQuestionDiv.className = 'zujuanjs-question';
-
-             // 应用自定义字体
-            if(customFont) newQuestionDiv.style.fontFamily = customFont;
-            if(customSize) newQuestionDiv.style.fontSize = customSize;
-
-            if (includeQuestions) {
-                var questionContentDiv = question.querySelector('.wrapper.quesdiv');
-                if (questionContentDiv) {
-
-                    var clonedContent = questionContentDiv.cloneNode(true);
-                    // 处理子元素字体
-                    if (customFont) clonedContent.style.fontFamily = customFont + ' !important';
-                    if (customSize) clonedContent.style.fontSize = customSize + ' !important';
-
-                    //newQuestionDiv.appendChild(questionContentDiv.cloneNode(true));
-                    var clonedContent = questionContentDiv.cloneNode(true);
-                    if (customFont) clonedContent.style.fontFamily = customFont + ' !important';
-                    if (customSize) clonedContent.style.fontSize = customSize + ' !important';
-                    newQuestionDiv.appendChild(clonedContent);
                 }
             } else if (section.classList.contains('tk-quest-item') && section.classList.contains('quesroot')) {
                 // 添加问题
                 const newQuestionDiv = document.createElement('div');
                 newQuestionDiv.className = 'zujuanjs-question';
 
+                // 应用自定义字体
+                if (customFont) newQuestionDiv.style.fontFamily = customFont;
+                if (customSize) newQuestionDiv.style.fontSize = customSize;
+
                 const quesdiv = section.querySelector('.wrapper.quesdiv');
                 if (quesdiv) {
                     if (includeQuestions) {
                         const cntDiv = quesdiv.querySelector('.exam-item__cnt');
                         if (cntDiv) {
-                            newQuestionDiv.appendChild(cntDiv.cloneNode(true));
+                            var clonedContent = cntDiv.cloneNode(true);
+                            // 处理子元素字体
+                            if (customFont) clonedContent.style.fontFamily = customFont + ' !important';
+                            if (customSize) clonedContent.style.fontSize = customSize + ' !important';
+                            newQuestionDiv.appendChild(clonedContent);
                         }
                     }
                     if (includeAnswers) {
