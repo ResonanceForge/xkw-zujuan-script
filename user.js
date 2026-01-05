@@ -233,7 +233,6 @@
                 let includeAnswers = false;
                 let answersAtEnd = false;
 
-<<<<<<< HEAD
                 if (choice === 'questions') {
                     includeQuestions = true;
                 } else if (choice === 'with_answers') {
@@ -247,7 +246,6 @@
                 }
 
                 handlePrint(includeQuestions, includeAnswers, answersAtEnd);
-=======
         // 最终调用打印处理
         handlePrint(includeQuestions, includeAnswers);
     });
