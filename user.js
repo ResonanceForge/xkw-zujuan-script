@@ -18,7 +18,7 @@
 // @license      GNU Affero General Public License v3.0
 // ==/UserScript==
 
-(function() {
+function() {
     'use strict';
     console.log("✅ 程序加载成功");
 
@@ -255,7 +255,7 @@
     function fontSelectButtonClickHandler() {
         Swal.fire({
             title: '设置题目字体',
-            html: 
+            html:
                 '<input id="swal-font" class="swal2-input" placeholder="字体名称（如宋体）">'
                 + '<input id="swal-size" class="swal2-input" placeholder="字号（如14px）">',
             confirmButtonText: "保存",
