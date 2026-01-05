@@ -18,7 +18,7 @@
 // @license      GNU Affero General Public License v3.0
 // ==/UserScript==
 
-function() {
+(function() {
     'use strict';
     console.log("✅ 程序加载成功");
 
@@ -245,11 +245,8 @@ function() {
                     includeAnswers = true;
                 }
 
-                handlePrint(includeQuestions, includeAnswers, answersAtEnd);
         // 最终调用打印处理
         handlePrint(includeQuestions, includeAnswers);
-    });
-}
 
     // 在创建打印按钮后添加字体选择器
     function fontSelectButtonClickHandler() {
@@ -273,37 +270,8 @@ function() {
                 Swal.fire('已保存！', '', 'success');
             }
         });
-    };
-
-    function handlePrint(includeQuestions, includeAnswers) {
-        if (includeAnswers) {// 修复这里的条件，确保不会无意中赋值
-            clickShowAnswersButton(); //如果需要答案,先点击显示答案的按钮
-        }
-        var intervalId = window.setInterval(function() {
-            if (document.readyState === "complete") { //页面完全加载后执行
-                clearInterval(intervalId);
-                var newPageBody = getReformattedContent(includeQuestions, includeAnswers);
-                var titleElement = document.querySelector('.exam-title .title-txt');
-                var subject = document.getElementsByClassName('subject-menu__title')[0].innerText;
-
-                if (titleElement) { //如果有标题
-                    var pageTitle = titleElement.textContent.trim();
-                    var titleDiv = document.createElement('div');
-                    titleDiv.id = 'page-title';
-                    titleDiv.textContent = pageTitle;
-                    newPageBody.insertBefore(titleDiv, newPageBody.firstChild);//将标题插入到页面的第一个元素之前
-                } else {
-                    console.log('Title element not found');
-                }
-
-                document.body.innerHTML = '';//先清空原页面所有内容
-                document.body.appendChild(newPageBody);//插入新的内容，方便打印
-                console.log("✅ 处理成功！");
-                GM_notification(subject + ' | ' + pageTitle + "\n ✅ 试卷处理成功！");
-                print();
-            }
-        });
     }
+
 
     // 处理打印（优化：移除interval，使用事件监听）
     function handlePrint(includeQuestions, includeAnswers, answersAtEnd) {
