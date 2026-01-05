@@ -3,7 +3,7 @@
 // @version      2.2.2
 // @namespace
 // @description  【2025/12/13】✨ 自动处理组卷网学科网试卷，并打印，支持去广告，答案分离。
-// @author       nuym
+// @author       nuym, WorkingFishQ
 // @match        https://zujuan.xkw.com/zujuan
 // @match        https://zujuan.xkw.com/zujuan/
 // @match        https://zujuan.xkw.com/*.html
@@ -11,6 +11,8 @@
 // @match        https://zujuan.xkw.com/share-paper/*
 // @icon         https://zujuan.xkw.com/favicon.ico
 // @grant        GM_notification
+// @grant        GM_setValue
+// @grant        GM_getValue
 // @require      https://fastly.jsdelivr.net/npm/sweetalert2@11
 // @homepage     https://github.com/bzyzh/xkw-zujuan-script
 // @license      GNU Affero General Public License v3.0
@@ -26,11 +28,14 @@
 
     console.log("-----------------------------------------------");
     console.log("🔹版本：2.1.2");
-    console.log("🔹作者：nuym");
+    console.log("🔹作者：nuym、WorkingFishT");
     console.log("🔹开源地址：https://github.com/bzyzh/xkw-zujuan-script");
     console.log("🔹学校网站：https://www.bzyzh.com");
     console.log("🔹组卷网用户： %s", username);
-    console.log("🔹亳州一中学生作品~", username);
+    console.log("🔹亳州一中学生作品~");
+    console.log("🔹由修改湛江一中学生");
+    //console.log("🔹组卷网等级： %s", usertype);
+    //console.log("🔹组卷网到期时间： %s", endtime);
     console.log("-----------------------------------------------");
 
     // 去除广告（添加null检查）
@@ -121,6 +126,7 @@
             margin-right: 8px;
         }
     `;
+
     document.head.appendChild(style);
 
     // 查找目标元素并添加打印按钮（简化逻辑）
@@ -134,6 +140,17 @@
         printButton.className = "btnTestDown link-item anchor-font3";
         printButton.innerHTML = `<i class="icon icon-download1"></i><span>打印试卷</span>`;
         targetElement.appendChild(printButton);
+
+        //createFontSelector();
+        console.log("🔹 创建字体选择按钮对象...");
+        var fontSelectButton = document.createElement('a');
+        fontSelectButton.className = "btnTestDown link-item anchor-font3";
+        fontSelectButton.innerHTML = `<i class="icon icon-download1"></i><span>字体选择</span>`;
+        targetElement.appendChild(fontSelectButton);
+
+        fontSelectButton.onclick = fontSelectButtonClickHandler;
+        //fontSelectButtonClickHandler();
+
     } else {
         targetElement = document.querySelector('.btn.donwload-btn');
         if (targetElement) {
@@ -216,6 +233,7 @@
                 let includeAnswers = false;
                 let answersAtEnd = false;
 
+<<<<<<< HEAD
                 if (choice === 'questions') {
                     includeQuestions = true;
                 } else if (choice === 'with_answers') {
@@ -229,6 +247,62 @@
                 }
 
                 handlePrint(includeQuestions, includeAnswers, answersAtEnd);
+=======
+        // 最终调用打印处理
+        handlePrint(includeQuestions, includeAnswers);
+    });
+}
+
+    // 在创建打印按钮后添加字体选择器
+    function fontSelectButtonClickHandler() {
+        Swal.fire({
+            title: '设置题目字体',
+            html: 
+                '<input id="swal-font" class="swal2-input" placeholder="字体名称（如宋体）">'
+                + '<input id="swal-size" class="swal2-input" placeholder="字号（如14px）">',
+            confirmButtonText: "保存",
+            focusConfirm: false,
+            preConfirm: () => {
+                return {
+                    font: document.getElementById('swal-font').value,
+                    size: document.getElementById('swal-size').value
+                }
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                GM_setValue('questionFont', result.value.font);
+                GM_setValue('questionSize', result.value.size);
+                Swal.fire('已保存！', '', 'success');
+            }
+        });
+    };
+
+    function handlePrint(includeQuestions, includeAnswers) {
+        if (includeAnswers) {// 修复这里的条件，确保不会无意中赋值
+            clickShowAnswersButton(); //如果需要答案,先点击显示答案的按钮
+        }
+        var intervalId = window.setInterval(function() {
+            if (document.readyState === "complete") { //页面完全加载后执行
+                clearInterval(intervalId);
+                var newPageBody = getReformattedContent(includeQuestions, includeAnswers);
+                var titleElement = document.querySelector('.exam-title .title-txt');
+                var subject = document.getElementsByClassName('subject-menu__title')[0].innerText;
+
+                if (titleElement) { //如果有标题
+                    var pageTitle = titleElement.textContent.trim();
+                    var titleDiv = document.createElement('div');
+                    titleDiv.id = 'page-title';
+                    titleDiv.textContent = pageTitle;
+                    newPageBody.insertBefore(titleDiv, newPageBody.firstChild);//将标题插入到页面的第一个元素之前
+                } else {
+                    console.log('Title element not found');
+                }
+
+                document.body.innerHTML = '';//先清空原页面所有内容
+                document.body.appendChild(newPageBody);//插入新的内容，方便打印
+                console.log("✅ 处理成功！");
+                GM_notification(subject + ' | ' + pageTitle + "\n ✅ 试卷处理成功！");
+                print();
             }
         });
     }
@@ -287,6 +361,36 @@
                     titleDiv.className = 'zujuanjs-section-title';
                     titleDiv.textContent = span.textContent.trim();
                     newPageBody.appendChild(titleDiv);
+        // 获取存储的字体设置
+        var customFont = GM_getValue('questionFont', '');
+        var customSize = GM_getValue('questionSize', '');
+
+        // 获取所有的题目元素
+        var questions = document.querySelectorAll('.tk-quest-item.quesroot');
+
+        // 遍历每个题目元素
+        questions.forEach(function(question) {
+            var newQuestionDiv = document.createElement('div');
+            newQuestionDiv.className = 'zujuanjs-question';
+
+             // 应用自定义字体
+            if(customFont) newQuestionDiv.style.fontFamily = customFont;
+            if(customSize) newQuestionDiv.style.fontSize = customSize;
+
+            if (includeQuestions) {
+                var questionContentDiv = question.querySelector('.wrapper.quesdiv');
+                if (questionContentDiv) {
+
+                    var clonedContent = questionContentDiv.cloneNode(true);
+                    // 处理子元素字体
+                    if (customFont) clonedContent.style.fontFamily = customFont + ' !important';
+                    if (customSize) clonedContent.style.fontSize = customSize + ' !important';
+
+                    //newQuestionDiv.appendChild(questionContentDiv.cloneNode(true));
+                    var clonedContent = questionContentDiv.cloneNode(true);
+                    if (customFont) clonedContent.style.fontFamily = customFont + ' !important';
+                    if (customSize) clonedContent.style.fontSize = customSize + ' !important';
+                    newQuestionDiv.appendChild(clonedContent);
                 }
             } else if (section.classList.contains('tk-quest-item') && section.classList.contains('quesroot')) {
                 // 添加问题
