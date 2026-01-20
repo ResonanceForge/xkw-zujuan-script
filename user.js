@@ -393,23 +393,28 @@
 
     // 点击显示答案按钮
     function clickShowAnswersButton() {
-        // 检查新的复选框结构
-        const quesDivCheckbox = document.querySelector('.wrapper.quesdiv');
-        if (quesDivCheckbox && !quesDivCheckbox.checked) {
-            // 尝试点击对应 label
-            console.log("a");
-            const label = quesDivCheckbox.closest('label') || document.querySelector(`label[for="${quesDivCheckbox.id}"]`);
-            if (label) {
-                label.click();
-                console.log("b");
-            }
-            else {
-                console.log('c');
-            }
-            return;
-        }
+        // 1. Use querySelectorAll to get ALL matching elements
+        const allQuesDivs = document.querySelectorAll('.wrapper.quesdiv');
 
-        // 原有的复选框结构
+        // 2. Iterate through each element
+        allQuesDivs.forEach(quesDivCheckbox => {
+            if (!quesDivCheckbox.checked) {
+                console.log("a");
+
+                // Try to click corresponding label for this specific checkbox
+                const label = quesDivCheckbox.closest('label') || document.querySelector(`label[for="${quesDivCheckbox.id}"]`);
+
+                if (label) {
+                    label.click();
+                    console.log("b");
+                } else {
+                    quesDivCheckbox.click();
+                    console.log('c');
+                }
+            }
+        });
+
+        // Old structure check (Runs independently now, or you can wrap it in an 'else' if the page never has both)
         const checkboxSpan = document.querySelector('.tklabel-checkbox.show-answer');
         if (checkboxSpan) {
             const checkbox = checkboxSpan.querySelector('input[type="checkbox"]');
