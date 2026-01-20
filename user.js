@@ -394,12 +394,18 @@
     // 点击显示答案按钮
     function clickShowAnswersButton() {
         // 检查新的复选框结构
-        const quesDivCheckbox = document.querySelector('.wrapper.quesdiv input[type="checkbox"]');
+        const quesDivCheckbox = document.querySelector('.wrapper.quesdiv');
         if (quesDivCheckbox && !quesDivCheckbox.checked) {
             // 尝试点击对应 label
+            console.log("a");
             const label = quesDivCheckbox.closest('label') || document.querySelector(`label[for="${quesDivCheckbox.id}"]`);
-            if (label) label.click();
-            else quesDivCheckbox.click();
+            if (label) {
+                label.click();
+                console.log("b");
+            }
+            else {
+                console.log('c');
+            }
             return;
         }
 
